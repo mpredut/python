@@ -4,6 +4,10 @@
 import requests
 from bs4 import BeautifulSoup
 
+
+url = "https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/<BREND>/?currency=EUR&page=<PAGE>"
+
+
 #data = {'An':"", 'Pret':"",'Descriere':""}
 data = set()       
         
@@ -19,7 +23,14 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
  
-    
+def by_year(ele):
+    ele[0]
+
+ 
+def by_price(ele):
+    return ele[1]
+  
+  
 def only_numerics(seq):
     seq = seq.split(",")[0]
     seq_type = type(seq)
@@ -28,7 +39,10 @@ def only_numerics(seq):
  
 
 def parseurl(url, text): 
-        
+    
+    text = text.lower()
+    print("[url " + url + " cheie " + text +"]")
+    
     response = requests.get(url)
 
     # Extragem con?inutul paginii web
@@ -91,31 +105,36 @@ def parseurl(url, text):
     #endfor
         
     if(find_items) :
-        print("[url " + url + " cheie " + model +"]")
+        print("[url " + url + " cheie " + text +"]")
 
 #end functions
 
 #cautamasina("marca", "model")
 
+def cautamasina(brend, model): 
+
+    global url
+    urlreal = url.replace("<BREND>", brend)
+    
+    for i in range(1, 9) :
+        urlsearch = urlreal.replace("<PAGE>", str(i))
+        parseurl(urlsearch, model)
+       
+    global data       
+    datas = sorted(data)
+    print("")
+    for val in datas:
+        print(val)
+
 #MAIN
-
-url = 'https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/lexus/?currency=EUR'
-
-url = "https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/<BREND>/?currency=EUR&page=<PAGE>"
-
 
 brend = "lexus"
 model = "rx"
 
 
-#print(only_numerics("59 989,09"))
- 
-url = url.replace("<BREND>", brend)
-for i in range(1, 9) :
-    urlsearch = url.replace("<PAGE>", str(i))
-    parseurl(urlsearch, model)
-    
-
-
-for val in data:
-    print(val)
+#cautamasina("ford", "explorer")
+#cautamasina("lexus", "rx")
+#cautamasina("toyota", "land-cruiser")
+#cautamasina("bmw", "x5")
+#cautamasina("nissan", "navara")
+cautamasina("toyota", "hilux")

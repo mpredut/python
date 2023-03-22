@@ -40,7 +40,7 @@ def parseurl(url, text):
     
     text = text.lower()
         
-    #print("[url " + url + " cheie " + model +"]")    
+    #print("[url " + url + " cheie " + text +"]")    
     response = requests.get(url)
 
     # Extragem con?inutul paginii web
@@ -130,7 +130,7 @@ def cautamasina(brend, model):
 
 #cautamasina("ford", "explorer")
 #cautamasina("lexus", "rx")
-cautamasina("toyota", "land-cruiser")
-cautamasina("bmw", "x5")
+#cautamasina("toyota", "land-cruiser")
+#cautamasina("bmw", "x5")
 #cautamasina("nissan", "navara")
-#cautamasina("toyota", "navara")
+cautamasina("toyota", "hylux")
