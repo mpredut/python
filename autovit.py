@@ -4,7 +4,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-url = "https://www.autovit.ro/autoturisme/<BREND>?page=<PAGE>"
+url = "https://www.autovit.ro/autoturisme/<BREND>/<MODEL>?page=<PAGE>"
 
 #data = {'An':"", 'Pret':"",'Descriere':""}
 data = set()       
@@ -54,7 +54,6 @@ def parseurl(url, text):
     # Parcurgem fiecare element de anun? pentru a extrage informa?iile despre ma?ini
     for ad_element in ad_elements:
         #print(ad_element)
-       
         year = ad_element.find('li')
         
         # span aria-hidden="true" data-make="lexus" data-placeholder="financing-widget" data-price="43900" data-testid="financing-widget" data-title="Lexus Seria NX 300h AWD">
@@ -65,7 +64,7 @@ def parseurl(url, text):
            continue
         detail = ad_element.find('p')
         if (detail is not None) :
-            title = title + detail.text.lower();
+            title = title + " " + detail.text.lower();
         
         year = year.text.lower();
         stryear = only_numerics(str(year))      
@@ -75,8 +74,8 @@ def parseurl(url, text):
        
         #pentru detallii cauta <a href="https://www.autovit.ro/anunt/lexus-seria-nx-ID7H5QwU.html" target="_self">
               
-        if(text != "" and ( not text in strtitle)):
-            continue
+        #if(text != "" and ( not text in strtitle)):
+        #    continue
 
         if((strtitle.find("leasing") != -1 or strtitle.find("rate") != -1)):
             if(strprice == "") :
@@ -84,7 +83,7 @@ def parseurl(url, text):
                 #print(f"AN:{stryear} Pret: LIPSA!. {strtitle} ")  
                 data.update([(stryear, 'LIPSA', strtitle)])
             else :
-                if (int(strprice) < 45000) :
+                if (int(strprice) < 40000) :
                     find_items  = True
                     #print(f"AN:{stryear} Pret: {strprice}. {strtitle} ") 
                     data.update([(stryear, strprice, strtitle)])
@@ -94,7 +93,7 @@ def parseurl(url, text):
                 find_items  = True
                 #print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)   
                 data.update([(stryear, strprice, strtitle)])
-            if(int(stryear) > 2016 and int(strprice) < 35000) :
+            if(int(stryear) > 2016 and int(strprice) < 33000) :
                 find_items  = True
                # print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)
                 data.update([(stryear, strprice, strtitle)])
@@ -111,11 +110,29 @@ def parseurl(url, text):
 #end functions
 
 def cautamasina(brend, model): 
-
+    print("")
+    
     global url
     urlreal = url.replace("<BREND>", brend)
+    urlreal = urlreal.replace("<MODEL>", model)
+
+    #get nb of items to calculate nb of pages
+    urlsearch = urlreal.replace("<PAGE>", "1")
+    response = requests.get(urlsearch)
+    content = response.content
+    soup = BeautifulSoup(content, 'html.parser')
+    nb = soup.find('h1')
+    if(nb is None) :
+       print("nu exista pagina " + urlsearch)
+       return;
+    strnb = only_numerics(nb.text)
+    if(strnb == "") : #//nu sunt rezultate pt. cautare
+        print("nu sunt rezultate pentru "+ urlsearch)
+        return;
+    nb = int(int(strnb) / 32) + 1
+    print(str(nb) + " pagini pentru " + model)
     
-    for i in range(1, 9) :
+    for i in range(1, nb + 1) :
         urlsearch = urlreal.replace("<PAGE>", str(i))
         parseurl(urlsearch, model)
        
@@ -128,9 +145,10 @@ def cautamasina(brend, model):
 #MAIN
 
 
-#cautamasina("ford", "explorer")
-#cautamasina("lexus", "rx")
-#cautamasina("toyota", "land-cruiser")
+cautamasina("ford", "explorer")
+cautamasina("lexus", "seria-rx")
+cautamasina("lexus", "altul")
+cautamasina("toyota", "land-cruiser")
 #cautamasina("bmw", "x5")
 #cautamasina("nissan", "navara")
-cautamasina("toyota", "hylux")
+cautamasina("toyota", "hilux")
