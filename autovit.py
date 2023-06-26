@@ -58,10 +58,16 @@ def parseurl(url, text):
         
         # span aria-hidden="true" data-make="lexus" data-placeholder="financing-widget" data-price="43900" data-testid="financing-widget" data-title="Lexus Seria NX 300h AWD">
         title = ad_element.find('span', {'aria-hidden': 'true'})
-        price = title["data-price"]
-        title = title["data-title"]
         if( title is None) :
            continue
+  
+        price = title["data-price"]
+        title = title["data-title"]
+        ancora = ad_element.find('a', href=True);
+        if(ancora is not None) : 
+            #print("Ancora " + ancora['href']);
+            strancora = ancora['href'];
+
         detail = ad_element.find('p')
         if (detail is not None) :
             title = title + " " + detail.text.lower();
@@ -69,8 +75,13 @@ def parseurl(url, text):
         year = year.text.lower();
         stryear = only_numerics(str(year))      
         strtitle = str(title).lower();
-        strprice  = str(price);
+        
+        strprice = "0";
+        if( price is not None) :
+            strprice  = str(price);
         strprice = only_numerics(strprice);
+        if(strprice == "") :
+            strprice = "0";
        
         #pentru detallii cauta <a href="https://www.autovit.ro/anunt/lexus-seria-nx-ID7H5QwU.html" target="_self">
               
@@ -78,15 +89,11 @@ def parseurl(url, text):
         #    continue
 
         if((strtitle.find("leasing") != -1 or strtitle.find("rate") != -1)):
-            if(strprice == "") :
+            if (int(strprice) < 41000) :
                 find_items  = True
-                #print(f"AN:{stryear} Pret: LIPSA!. {strtitle} ")  
-                data.update([(stryear, 'LIPSA', strtitle)])
-            else :
-                if (int(strprice) < 40000) :
-                    find_items  = True
-                    #print(f"AN:{stryear} Pret: {strprice}. {strtitle} ") 
-                    data.update([(stryear, strprice, strtitle)])
+                #print(f"AN:{stryear} Pret: {strprice}. {strtitle} ") 
+                data.update([(stryear, strprice, strtitle, strancora)])
+                    
         
         if (stryear != "" and strprice != "") :
             if(int(stryear) > 2008 and int(strprice) < 10000) :
@@ -96,12 +103,12 @@ def parseurl(url, text):
             if(int(stryear) > 2016 and int(strprice) < 33000) :
                 find_items  = True
                # print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)
-                data.update([(stryear, strprice, strtitle)])
+                data.update([(stryear, strprice, strtitle, strancora)])
         
         if(int(stryear) > 2016 and strprice == "") :
             find_items  = True
             #print("AN:" + stryear + " Pret: LIPSA! " + strtitle)
-            data.update([(stryear, 'LIPSA', strtitle)])
+            data.update([(stryear, 'LIPSA', strtitle, strancora)])
     #endfor
         
     if(find_items) :
@@ -124,15 +131,16 @@ def cautamasina(brend, model):
     nb = soup.find('h1')
     if(nb is None) :
        print("nu exista pagina " + urlsearch)
-       return;
-    strnb = only_numerics(nb.text)
+       strnb = "1000"
+    else :
+        strnb = only_numerics(nb.text)
     if(strnb == "") : #//nu sunt rezultate pt. cautare
         print("nu sunt rezultate pentru "+ urlsearch)
         return;
     nb = int(int(strnb) / 32) + 1
     print(str(nb) + " pagini pentru " + model)
     
-    for i in range(1, nb + 1) :
+    for i in range(0, nb + 1) :
         urlsearch = urlreal.replace("<PAGE>", str(i))
         parseurl(urlsearch, model)
        
@@ -146,9 +154,12 @@ def cautamasina(brend, model):
 
 
 cautamasina("ford", "explorer")
+cautamasina("ford", "mustang")
 cautamasina("lexus", "seria-rx")
 cautamasina("lexus", "altul")
 cautamasina("toyota", "land-cruiser")
+cautamasina("toyota", "highlander")
 #cautamasina("bmw", "x5")
 #cautamasina("nissan", "navara")
 cautamasina("toyota", "hilux")
+cautamasina("land-rover","")
