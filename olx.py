@@ -138,6 +138,7 @@ def parseurl(url, text, minyear, maxprice):
 
 #cautamasina("marca", "model")
 
+
 def cautamasina(brend, model, minyear, maxprice): 
     print("")
 
