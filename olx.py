@@ -12,6 +12,7 @@ url = "https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/<BREND>/?cur
 
 #data = {'An':"", 'Pret':"",'Descriere':""}
 data = set()       
+data_avariat = set()  
         
 class bcolors:
     HEADER = '\033[95m'
@@ -40,13 +41,13 @@ def only_numerics(seq):
  
  
 
-def parseurl(url, text, minyear, maxprice): 
+def parseurl(url, cheie, minyear, maxprice): 
     
     global yearreference
     
     ratereference = maxprice / (minyear - yearreference)
-    text = text.lower()
-    print("[url " + url + " cheie " + text +"]")
+    cheie = cheie.lower()
+    print("[url  check " + url + " cheie " + cheie +"]")
     #print("rateref " + str(ratereference))
     
     response = requests.get(url)
@@ -61,7 +62,7 @@ def parseurl(url, text, minyear, maxprice):
     find_items  = False;
     # Parcurgem fiecare element de anun? pentru a extrage informa?iile despre ma?ini
     for ad_element in ad_elements:
-        #  print(ad_element)
+        #print(ad_element)
         # Ob?inem informa?iile despre ma?ina
         title = ad_element.find('h6')
         price = ad_element.find('p', {'data-testid': 'ad-price'})
@@ -82,24 +83,33 @@ def parseurl(url, text, minyear, maxprice):
         #if(text != "" and ( not text in strtitle)):
         #    continue
  
-        year = "1000"
-        if(yearandkm is not None and str(yearandkm.text.strip()).find(" - ") != -1):
-            split = yearandkm.text.strip().split(" - ")
-            year = split[0]
-            km = split[1]
+        year = "2023"
+        if(yearandkm is not None) :
+            if (str(yearandkm.text.strip()).find(" - ") != -1):
+                split = yearandkm.text.strip().split(" - ")
+                year = split[0]
+                km = split[1]
+            else :
+                year = yearandkm.text.strip();
+        if(len(year) < 4) :
+                year = "2023"
 
         stryear = only_numerics(str(year))
-        
-        
-        if(int(stryear) <= yearreference) :
-            continue;
 
-        if(ancora is not None) : 
+        if(ancora is not None) :
             #print("Ancora " + ancora['href']);
             strancora = ancora['href'];
         if(not search("www.autovit.ro", strancora)): 
             strancora = "https://www.olx.ro/" + strancora;
         #print(strancora)
+        
+        if(strtitle.find("avariat") != -1) :
+            print(f"AN:{stryear} Pret: {strprice}. {strtitle} ")
+            data_avariat.update([(stryear, strprice, strtitle, strancora)])        
+        
+        if(int(stryear) <= yearreference) :
+            #print(ad_element)
+            continue;
             
         rate = int(strprice) / (int(stryear) - yearreference)
         #print("rate " + str(rate))
@@ -107,7 +117,7 @@ def parseurl(url, text, minyear, maxprice):
             #print("ratereference" + str(ratereference))
             #print(strancora)
             continue;
-        
+              
         if((strtitle.find("leasing") != -1 or strtitle.find("rate") != -1)):
             if (int(strprice) < 41000) :
                 find_items  = True
@@ -132,7 +142,7 @@ def parseurl(url, text, minyear, maxprice):
     #endfor
         
     if(find_items) :
-        print("[url " + url + " cheie " + text +"]")
+        print("find in that [url " + url + " cheie " + cheie +"]")
 
 #end functions
 
@@ -177,24 +187,77 @@ def cautamasina(brend, model, minyear, maxprice):
 #MAIN
 
 
+#parseurl("https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/toyota/?currency=EUR&page=4&search%5Bfilter_enum_model%5D%5B0%5D=land-cruiser", "land-cruiser", 2008, 12000)  
+#datas = sorted(data)
+#print("")
+#for val in datas:
+#    print(val)
 #Anul de referinta este setat la 2005. vei cauta incepand cu 2006
 
-cautamasina("maserati", "", 2008, 8000)
-cautamasina("ford", "explorer", 2008, 8000)
-cautamasina("ford", "mustang", 2008, 6000)
-cautamasina("lexus", "seria-rx", 2008, 8000)
-cautamasina("lexus", "seria-lx", 2008, 8000)
-cautamasina("lexus", "egyeb", 2008, 8000) #altul
-cautamasina("toyota", "land-cruiser", 2008, 8000)
+
+#cautamasina("maserati", "", 2008, 8000)
+#cautamasina("ford", "explorer", 2008, 8000)
+#cautamasina("ford", "mustang", 2008, 6000)
+#cautamasina("lexus", "seria-rx", 2008, 8000)
+#cautamasina("lexus", "seria-lx", 2008, 8000)
+#cautamasina("lexus", "egyeb", 2008, 8000) #altul
+#cautamasina("toyota", "land-cruiser", 2014, 12000)
 #cautamasina("bmw", "x5", 2010, 8000)
 #cautamasina("volvo", "xc-90", 2010, 8000)
 #cautamasina("volvo", "xc-60", 2010, 6000)
-cautamasina("nissan", "navara", 2008, 4500)
-cautamasina("toyota", "hilux", 2008, 7000)
-cautamasina("toyota", "highlander", 2008, 7000)
+#cautamasina("nissan", "navara", 2008, 4500)
+
+#cautamasina("toyota", "hilux", 2008, 7000)
+#cautamasina("toyota", "highlander", 2008, 7000)
+#cautamasina("toyota", "4-runner", 2008, 7000)
 #cautamasina("land-rover","", 2008, 5500)
 #cautamasina("mercedes-benz","gle", 2008, 7000)
 #cautamasina("mercedes-benz","gls", 2008, 8000)
 #cautamasina("mercedes-benz","gl-class", 2008, 7000)
 
+cautamasina("toyota", "", 2008, 1000)
+cautamasina("honda", "", 2008, 1000)
+# cautamasina("ford", "", 2008, 1000)
+# cautamasina("Chevrolet", "", 2008, 1000)
+# cautamasina("Volkswagen", "", 2008, 1000)
+# cautamasina("Nissan", "", 2008, 1000)
+# cautamasina("BMW", "", 2008, 2000)
+# cautamasina("Mercedes-Benz", "", 2008, 2000)
+# cautamasina("Audi", "", 2008, 1000)
+# cautamasina("Kia", "", 2008, 1000)
+# cautamasina("Hyundai", "", 2008, 1000)
+# cautamasina("Mazda", "", 2008, 1000)
+# cautamasina("Subaru", "", 2008, 1000)
+# cautamasina("Tesla", "", 2008, 5000)
+# cautamasina("Volvo", "", 2008, 2000)
+# cautamasina("Fiat", "", 2008, 1000)
+# cautamasina("Mitsubishi", "", 2008, 1000)
+# cautamasina("jep", "", 2008, 2000)
+# cautamasina("Peugeot", "", 2008, 1000)
+# cautamasina("Renault", "", 2008, 1000)
+# cautamasina("acura", "", 2008, 2000)
+# cautamasina("alfa-romeo", "", 2008, 2000)
 
+# cautamasina("citroen", "", 2008, 1000)
+# cautamasina("Dacia", "", 2008, 1000)
+# cautamasina("daihatsu", "", 2008, 1000)
+# cautamasina("doge", "", 2008, 2000)
+# cautamasina("gmc", "", 2008, 2000)
+# cautamasina("hummer", "", 2008, 2000)
+# cautamasina("infiniti", "", 2008, 2000)
+
+# cautamasina("isuzu", "", 2008, 1000)
+# cautamasina("jaguar", "", 2008, 1000)
+# cautamasina("sab", "", 2008, 1000)
+# cautamasina("seat", "", 2008, 1000)
+# cautamasina("skoda", "", 2008, 1000)
+# cautamasina("smart", "", 2008, 1000)
+# cautamasina("suzuki", "", 2008, 1000)
+
+
+
+print("AVARIATE")  
+data_sort = sorted(data_avariat)
+print("")
+for val in data_sort:
+    print(val)
