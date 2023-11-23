@@ -13,6 +13,7 @@ url = "https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/<BREND>/?cur
 #data = {'An':"", 'Pret':"",'Descriere':""}
 data = set()       
 data_avariat = set()  
+data_leasing = set()
         
 class bcolors:
     HEADER = '\033[95m'
@@ -77,7 +78,8 @@ def parseurl(url, cheie, minyear, maxprice):
         if(price is not None) :
             strprice = only_numerics(str(price.text.strip()).lower());
         if(strprice == "") :
-            strprice = "0";
+            strprice = "0";#remove cars no prices
+            continue
         
         #text = text.lower()
         #if(text != "" and ( not text in strtitle)):
@@ -92,7 +94,7 @@ def parseurl(url, cheie, minyear, maxprice):
             else :
                 year = yearandkm.text.strip();
         if(len(year) < 4) :
-                year = "2023"
+                year = "99999"
 
         stryear = only_numerics(str(year))
 
@@ -105,40 +107,36 @@ def parseurl(url, cheie, minyear, maxprice):
         
         if(strtitle.find("avariat") != -1) :
             print(f"AN:{stryear} Pret: {strprice}. {strtitle} ")
-            data_avariat.update([(stryear, strprice, strtitle, strancora)])        
+            data_avariat.update([(stryear, strprice, strtitle, strancora)]) 
+            continue            
         
-        if(int(stryear) <= yearreference) :
+        if(int(stryear) <= minyear) :
             #print(ad_element)
             continue;
             
         rate = int(strprice) / (int(stryear) - yearreference)
         #print("rate " + str(rate))
+     
+        if((strtitle.find("leasing") != -1 or strtitle.find("rate") != -1 or strtitle.find("credit") != -1)):
+            if (int(strprice) < 43000) :
+                find_items  = True
+                #print(f"AN:{stryear} Pret: {strprice}. {strtitle} ") 
+                data_leasing.update([(stryear, strprice, strtitle, strancora)])
+     
         if(rate > ratereference) :
             #print("ratereference" + str(ratereference))
             #print(strancora)
             continue;
-              
-        if((strtitle.find("leasing") != -1 or strtitle.find("rate") != -1)):
-            if (int(strprice) < 41000) :
-                find_items  = True
-                #print(f"AN:{stryear} Pret: {strprice}. {strtitle} ") 
-                data.update([(stryear, strprice, strtitle, strancora)])
-                    
-
-        if (stryear != "" and strprice != "") :
-            if(int(stryear) > 2008 and int(strprice) < 14000) :
-                find_items  = True
-                #print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)   
-                data.update([(stryear, strprice, strtitle, strancora)])
-            if(int(stryear) > 2016 and int(strprice) < 32000) :
-                find_items  = True
-                #print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)
-                data.update([(stryear, strprice, strtitle, strancora)])
-        
-        if(int(stryear) > 2016 and strprice == "") :
+                   
+        #data.update([(stryear, strprice, strtitle, strancora)])
+        # if(int(stryear) > 2008 and int(strprice) < 14000) :
+            # find_items  = True
+            # #print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)   
+            # data.update([(stryear, strprice, strtitle, strancora)])
+        if(int(stryear) > 2016 and int(strprice) < 25000) :
             find_items  = True
-            #print("AN:" + stryear + " Pret: LIPSA! " + strtitle)
-            data.update([(stryear, 'LIPSA', strtitle, strancora)])
+            #print("AN:" + stryear + " Pret: " +  strprice +  ". " + strtitle)
+            data.update([(stryear, strprice, strtitle, strancora)])
     #endfor
         
     if(find_items) :
@@ -193,30 +191,35 @@ def cautamasina(brend, model, minyear, maxprice):
 #for val in datas:
 #    print(val)
 #Anul de referinta este setat la 2005. vei cauta incepand cu 2006
+# cautamasina("nissan", "navara", 2008, 4500)
 
+#cautamasina("audi", "", 2012, 6000)
+cautamasina("maserati", "", 2008, 8000)
+cautamasina("ford", "explorer", 2008, 8000)
+#cautamasina("ford", "edge", 2008, 7000)
+cautamasina("ford", "mustang", 2008, 6000)
+cautamasina("lexus", "seria-rx", 2008, 8000)
+cautamasina("lexus", "seria-lx", 2008, 8000)
+cautamasina("lexus", "egyeb", 2008, 8000) #altul
+cautamasina("toyota", "land-cruiser", 2014, 12000)
+# #cautamasina("bmw", "x5", 2010, 9000)
+# #cautamasina("bmw", "x6", 2010, 9000)
+# #cautamasina("volvo", "xc-90", 2010, 8000)
+# #cautamasina("volvo", "xc-60", 2010, 6000)
+cautamasina("nissan", "navara", 2008, 4500)
 
-#cautamasina("maserati", "", 2008, 8000)
-#cautamasina("ford", "explorer", 2008, 8000)
-#cautamasina("ford", "mustang", 2008, 6000)
-#cautamasina("lexus", "seria-rx", 2008, 8000)
-#cautamasina("lexus", "seria-lx", 2008, 8000)
-#cautamasina("lexus", "egyeb", 2008, 8000) #altul
-#cautamasina("toyota", "land-cruiser", 2014, 12000)
-#cautamasina("bmw", "x5", 2010, 8000)
-#cautamasina("volvo", "xc-90", 2010, 8000)
-#cautamasina("volvo", "xc-60", 2010, 6000)
-#cautamasina("nissan", "navara", 2008, 4500)
-
-#cautamasina("toyota", "hilux", 2008, 7000)
-#cautamasina("toyota", "highlander", 2008, 7000)
-#cautamasina("toyota", "4-runner", 2008, 7000)
+cautamasina("toyota", "hilux", 2008, 7000)
+cautamasina("toyota", "highlander", 2008, 7000)
+cautamasina("toyota", "4-runner", 2008, 7000)
 #cautamasina("land-rover","", 2008, 5500)
 #cautamasina("mercedes-benz","gle", 2008, 7000)
 #cautamasina("mercedes-benz","gls", 2008, 8000)
 #cautamasina("mercedes-benz","gl-class", 2008, 7000)
 
-cautamasina("toyota", "", 2008, 1000)
-cautamasina("honda", "", 2008, 1000)
+
+
+# cautamasina("toyota", "", 2008, 1000)
+# cautamasina("honda", "", 2008, 1000)
 # cautamasina("ford", "", 2008, 1000)
 # cautamasina("Chevrolet", "", 2008, 1000)
 # cautamasina("Volkswagen", "", 2008, 1000)
@@ -256,8 +259,19 @@ cautamasina("honda", "", 2008, 1000)
 
 
 
-print("AVARIATE")  
-data_sort = sorted(data_avariat)
+
+data_sort_leasing = sorted(data_leasing)
+data_sort_avariat = sorted(data_avariat)
+
 print("")
-for val in data_sort:
+print("")
+print("LEASING")  
+for val in data_sort_leasing:
     print(val)
+    
+print("")
+print("")
+print("AVARIATE")  
+for val in data_sort_avariat:
+    print(val)
+    
