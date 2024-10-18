@@ -63,11 +63,11 @@ def parseurl(url, cheie, minyear, maxprice):
     find_items  = False;
     # Parcurgem fiecare element de anun? pentru a extrage informa?iile despre ma?ini
     for ad_element in ad_elements:
-        #print(ad_element)
+        # print(ad_element)
         # Ob?inem informa?iile despre ma?ina
         title = ad_element.find('h6')
         price = ad_element.find('p', {'data-testid': 'ad-price'})
-        yearandkm = ad_element.find('div', {'class': 'css-efx9z5'})
+        yearandkm = ad_element.find('span', {'class': 'css-1cd0guq'})
         location = ad_element.find('td', {'class': 'bottom-cell'})
         ancora = ad_element.find('a', href=True);
         #<a class="css-rc5s2u" href="/d/oferta/toyota-hilux-2017-IDfSZon.html">
@@ -85,14 +85,19 @@ def parseurl(url, cheie, minyear, maxprice):
         #if(text != "" and ( not text in strtitle)):
         #    continue
  
-        year = "2023"
+        year = "2024"
+        km = "necunoscut"
+        #print(f"yearandkm = {yearandkm}")
         if(yearandkm is not None) :
-            if (str(yearandkm.text.strip()).find(" - ") != -1):
-                split = yearandkm.text.strip().split(" - ")
+            # Extragem anul și kilometrajul din textul elementului
+            yearandkm_text = yearandkm.text.strip()
+            if " " in yearandkm_text:
+                split = yearandkm_text.split(" ", 1)  # Împărțim după primul spațiu
                 year = split[0]
                 km = split[1]
-            else :
-                year = yearandkm.text.strip();
+            else:
+                year = yearandkm_text
+         
         if(len(year) < 4) :
                 year = "99999"
 
